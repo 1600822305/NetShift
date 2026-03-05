@@ -105,6 +105,7 @@
     <ClCompile Include="Based.cpp" />
     <ClCompile Include="DNSHandler.cpp" />
     <ClCompile Include="EventHandler.cpp" />
+    <ClCompile Include="HttpHelper.cpp" />
     <ClCompile Include="IPEventHandler.cpp" />
     <ClCompile Include="Redirector.cpp" />
     <ClCompile Include="SocksHelper.cpp" />
@@ -114,6 +115,7 @@
   <ItemGroup>
     <ClInclude Include="DNSHandler.h" />
     <ClInclude Include="EventHandler.h" />
+    <ClInclude Include="HttpHelper.h" />
     <ClInclude Include="IPEventHandler.h" />
     <ClInclude Include="Based.h" />
     <ClInclude Include="SocksHelper.h" />

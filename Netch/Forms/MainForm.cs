@@ -106,11 +106,6 @@ public partial class MainForm : Form
         _numberBoxWidth = ServerComboBox.Width / 10;
         _numberBoxX = _numberBoxWidth * 9;
         _numberBoxWrap = _numberBoxWidth / 30;
-
-        _configurationGroupBoxHeight = ConfigurationGroupBox.Height;
-        _profileConfigurationHeight = ConfigurationGroupBox.Controls[0].Height / 3; // 因为 AutoSize, 所以得到的是Controls的总高度
-        _profileGroupBoxPaddingHeight = ProfileGroupBox.Height - ProfileTable.Height;
-        _profileTableHeight = ProfileTable.Height;
     }
 
     private void TranslateControls()
@@ -814,69 +809,140 @@ public partial class MainForm : Form
 
     #region Profile
 
-    private int _configurationGroupBoxHeight;
-    private int _profileConfigurationHeight;
-    private int _profileGroupBoxPaddingHeight;
-    private int _profileTableHeight;
+    private Profile? _activeProfile;
 
     private void LoadProfiles()
     {
-        // Clear
-        foreach (var button in ProfileTable.Controls)
-            ((Button)button).Dispose();
-
-        ProfileTable.Controls.Clear();
-        ProfileTable.ColumnStyles.Clear();
-        ProfileTable.RowStyles.Clear();
-
-        var profileCount = Global.Settings.ProfileCount;
-        if (profileCount == 0)
+        // Remove old profile buttons (keep SaveProfileButton)
+        for (var i = ProfileFlowPanel.Controls.Count - 1; i >= 0; i--)
         {
-            // Hide Profile GroupBox, Change window size
-            configLayoutPanel.RowStyles[2].SizeType = SizeType.Percent;
-            configLayoutPanel.RowStyles[2].Height = 0;
-            ProfileGroupBox.Visible = false;
-
-            ConfigurationGroupBox.Height = _configurationGroupBoxHeight - _profileConfigurationHeight;
-        }
-        else
-        {
-            // Load Profiles
-
-            if (Global.Settings.ProfileTableColumnCount == 0)
-                Global.Settings.ProfileTableColumnCount = 5;
-
-            var columnCount = Global.Settings.ProfileTableColumnCount;
-
-            ProfileTable.ColumnCount = profileCount >= columnCount ? columnCount : profileCount;
-            ProfileTable.RowCount = (int)Math.Ceiling(profileCount / (float)columnCount);
-
-            for (var i = 0; i < profileCount; ++i)
+            var ctrl = ProfileFlowPanel.Controls[i];
+            if (ctrl != SaveProfileButton)
             {
-                var profile = Global.Settings.Profiles.SingleOrDefault(p => p.Index == i);
-                var b = new Button
-                {
-                    Dock = DockStyle.Fill,
-                    Text = profile?.ProfileName ?? i18N.Translate("None"),
-                    Tag = profile
-                };
+                ProfileFlowPanel.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
+        }
 
-                b.Click += ProfileButton_Click;
-                ProfileTable.Controls.Add(b, i % columnCount, i / columnCount);
+        var profiles = Global.Settings.Profiles;
+
+        // Insert profile buttons before SaveProfileButton
+        for (var i = 0; i < profiles.Count; i++)
+        {
+            var profile = profiles[i];
+            var b = new Button
+            {
+                Text = profile.ProfileName,
+                Tag = profile,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Margin = new Padding(3),
+                Padding = new Padding(6, 2, 6, 2),
+                FlatStyle = FlatStyle.Flat
+            };
+
+            b.FlatAppearance.BorderColor = Color.Gray;
+            b.FlatAppearance.BorderSize = 1;
+
+            // Highlight active profile
+            if (_activeProfile != null && profile.Index == _activeProfile.Index)
+            {
+                b.BackColor = Color.LightSkyBlue;
+                b.FlatAppearance.BorderColor = Color.DodgerBlue;
             }
 
-            // equal column
-            for (var i = 1; i <= ProfileTable.RowCount; i++)
-                ProfileTable.RowStyles.Add(new RowStyle(SizeType.Percent, 1));
+            b.Click += ProfileButton_Click;
 
-            for (var i = 1; i <= ProfileTable.ColumnCount; i++)
-                ProfileTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 1));
+            // Right-click context menu for delete
+            var menu = new ContextMenuStrip();
+            var deleteItem = new ToolStripMenuItem("删除此配置");
+            deleteItem.Tag = profile;
+            deleteItem.Click += DeleteProfileMenuItem_Click;
+            menu.Items.Add(deleteItem);
+            b.ContextMenuStrip = menu;
 
-            configLayoutPanel.RowStyles[2].SizeType = SizeType.AutoSize;
-            ProfileGroupBox.Visible = true;
-            ProfileGroupBox.Height = ProfileTable.RowCount * _profileTableHeight + _profileGroupBoxPaddingHeight;
-            ConfigurationGroupBox.Height = _configurationGroupBoxHeight;
+            ProfileFlowPanel.Controls.Add(b);
+            ProfileFlowPanel.Controls.SetChildIndex(b, i);
         }
+
+        ProfileGroupBox.Visible = true;
+    }
+
+    private void DeleteProfileMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (sender is not ToolStripMenuItem menuItem || menuItem.Tag is not Profile profile)
+            return;
+
+        Global.Settings.Profiles.Remove(profile);
+
+        if (_activeProfile != null && _activeProfile.Index == profile.Index)
+            _activeProfile = null;
+
+        LoadProfiles();
+    }
+
+    private void SaveProfileButton_Click(object? sender, EventArgs e)
+    {
+        if (ServerComboBox.SelectedItem is not Server server)
+        {
+            MessageBoxX.Show(i18N.Translate("Please select a server first"));
+            return;
+        }
+
+        if (ModeComboBox.SelectedItem is not Mode mode)
+        {
+            MessageBoxX.Show(i18N.Translate("Please select a mode first"));
+            return;
+        }
+
+        if (Global.Settings.Profiles.Count >= 8)
+        {
+            MessageBoxX.Show(i18N.Translate("Maximum 8 profiles allowed. Please delete one first."));
+            return;
+        }
+
+        var defaultName = $"{server.Remark} - {mode.i18NRemark}";
+        var name = ShowInputBox(i18N.Translate("Save Profile"), i18N.Translate("Profile Name:"), defaultName);
+        if (name == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(name))
+            name = defaultName;
+
+        var index = Global.Settings.Profiles.Count > 0
+            ? Global.Settings.Profiles.Max(p => p.Index) + 1
+            : 0;
+
+        var profile = new Profile(server, mode, name, index);
+        Global.Settings.Profiles.Add(profile);
+
+        LoadProfiles();
+    }
+
+    private static string? ShowInputBox(string title, string prompt, string defaultValue)
+    {
+        using var form = new Form
+        {
+            Text = title,
+            Width = 400,
+            Height = 160,
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            StartPosition = FormStartPosition.CenterParent,
+            MaximizeBox = false,
+            MinimizeBox = false
+        };
+
+        var label = new Label { Left = 15, Top = 15, Text = prompt, AutoSize = true };
+        var textBox = new TextBox { Left = 15, Top = 40, Width = 350, Text = defaultValue };
+        textBox.SelectAll();
+        var buttonOk = new Button { Text = "OK", Left = 210, Top = 75, Width = 75, DialogResult = DialogResult.OK };
+        var buttonCancel = new Button { Text = "Cancel", Left = 290, Top = 75, Width = 75, DialogResult = DialogResult.Cancel };
+
+        form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
+        form.AcceptButton = buttonOk;
+        form.CancelButton = buttonCancel;
+
+        return form.ShowDialog() == DialogResult.OK ? textBox.Text.Trim() : null;
     }
 
     private async void ProfileButton_Click([NotNull] object? sender, EventArgs? e)
@@ -886,58 +952,16 @@ public partial class MainForm : Form
 
         var button = (Button)sender;
         var profile = (Profile?)button.Tag;
-        var index = ProfileTable.Controls.IndexOf(button);
-
-        switch (ModifierKeys)
-        {
-            case Keys.Control:
-                // Save Profile
-                if (ServerComboBox.SelectedItem is not Server server)
-                {
-                    MessageBoxX.Show(i18N.Translate("Please select a server first"));
-                    return;
-                }
-
-                if (ModeComboBox.SelectedItem is not Mode mode)
-                {
-                    MessageBoxX.Show(i18N.Translate("Please select a mode first"));
-                    return;
-                }
-
-                var name = ProfileNameText.Text;
-
-                Global.Settings.Profiles.RemoveAll(p => p.Index == index);
-                profile = new Profile(server, mode, name, index);
-                Global.Settings.Profiles.Add(profile);
-                button.Tag = profile;
-                button.Text = profile.ProfileName;
-
-                ProfileNameText.Clear();
-                return;
-            case Keys.Shift:
-                // Delete Profile
-                if (profile == null)
-                    return;
-
-                Global.Settings.Profiles.Remove(profile);
-                button.Tag = null;
-                button.Text = i18N.Translate("None");
-                return;
-        }
-
-        // Activate Profile
 
         if (profile == null)
-        {
-            MessageBoxX.Show(i18N.Translate("No saved profile here. Save a profile first by Ctrl+Click on the button"));
             return;
-        }
 
         try
         {
-            ProfileNameText.Text = profile.ProfileName;
-
-            var server = ServerComboBox.Items.Cast<Server>().FirstOrDefault(s => s.Remark.Equals(profile.ServerRemark));
+            var server = !string.IsNullOrEmpty(profile.ServerType)
+                        ? ServerComboBox.Items.Cast<Server>().FirstOrDefault(s => s.Remark.Equals(profile.ServerRemark) && s.Type.Equals(profile.ServerType))
+                          ?? ServerComboBox.Items.Cast<Server>().FirstOrDefault(s => s.Remark.Equals(profile.ServerRemark))
+                        : ServerComboBox.Items.Cast<Server>().FirstOrDefault(s => s.Remark.Equals(profile.ServerRemark));
             var mode = ModeComboBox.Items.Cast<Mode>().FirstOrDefault(m => m.Remark.Any(s => s.Value.Equals(profile.ModeRemark)));
 
             if (server == null)
@@ -946,7 +970,6 @@ public partial class MainForm : Form
             if (mode == null)
                 throw new MessageException("Mode not found.");
 
-            // set active server and mode
             ServerComboBox.SelectedItem = server;
             ModeComboBox.SelectedItem = mode;
         }
@@ -955,6 +978,9 @@ public partial class MainForm : Form
             MessageBoxX.Show(exception.Message, LogLevel.ERROR);
             return;
         }
+
+        _activeProfile = profile;
+        LoadProfiles();
 
         await StopAsync();
         ControlButton.PerformClick();

@@ -3,6 +3,7 @@
 #define TCPHANDLER_H
 #include "Based.h"
 #include "SocksHelper.h"
+#include "HttpHelper.h"
 
 namespace TCPHandler
 {
@@ -15,8 +16,8 @@ namespace TCPHandler
 	void Accept();
 	void Handle(SOCKET client);
 
-	void Read(SOCKET client, SocksHelper::PTCP remote);
-	void Send(SOCKET client, SocksHelper::PTCP remote);
+	void Read(SOCKET client, SOCKET remote);
+	void Send(SOCKET client, SOCKET remote);
 }
 
 #endif

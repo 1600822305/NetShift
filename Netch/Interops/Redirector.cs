@@ -25,6 +25,7 @@ public static class Redirector
         AIO_TGTPORT,
         AIO_TGTUSER,
         AIO_TGTPASS,
+        AIO_TGTTYPE,
 
         AIO_CLRNAME,
         AIO_ADDNAME,

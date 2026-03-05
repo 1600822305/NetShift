@@ -54,10 +54,9 @@
             this.VersionLabel = new System.Windows.Forms.ToolStripLabel();
             this.ConfigurationGroupBox = new System.Windows.Forms.GroupBox();
             this.configLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.ProfileLabel = new System.Windows.Forms.Label();
             this.ModeLabel = new System.Windows.Forms.Label();
             this.ServerLabel = new System.Windows.Forms.Label();
-            this.ProfileNameText = new System.Windows.Forms.TextBox();
+            this.SaveProfileButton = new System.Windows.Forms.Button();
             this.ModeComboBox = new System.Windows.Forms.ComboBox();
             this.ServerComboBox = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
@@ -84,7 +83,7 @@
             this.ExitToolStripButton = new System.Windows.Forms.ToolStripMenuItem();
             this.SettingsButton = new System.Windows.Forms.Button();
             this.ProfileGroupBox = new System.Windows.Forms.GroupBox();
-            this.ProfileTable = new System.Windows.Forms.TableLayoutPanel();
+            this.ProfileFlowPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.ButtomControlContainerControl = new System.Windows.Forms.ContainerControl();
             this.MenuStrip.SuspendLayout();
@@ -100,6 +99,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.DeleteModePictureBox)).BeginInit();
             this.StatusStrip.SuspendLayout();
             this.NotifyMenu.SuspendLayout();
+            this.ProfileFlowPanel.SuspendLayout();
             this.ProfileGroupBox.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.ButtomControlContainerControl.SuspendLayout();
@@ -317,7 +317,7 @@
             this.ConfigurationGroupBox.Controls.Add(this.configLayoutPanel);
             this.ConfigurationGroupBox.Location = new System.Drawing.Point(3, 3);
             this.ConfigurationGroupBox.Name = "ConfigurationGroupBox";
-            this.ConfigurationGroupBox.Size = new System.Drawing.Size(709, 115);
+            this.ConfigurationGroupBox.Size = new System.Drawing.Size(709, 85);
             this.ConfigurationGroupBox.TabIndex = 1;
             this.ConfigurationGroupBox.TabStop = false;
             this.ConfigurationGroupBox.Text = "Configuration";
@@ -330,10 +330,8 @@
             this.configLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.configLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.configLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.configLayoutPanel.Controls.Add(this.ProfileLabel, 0, 2);
             this.configLayoutPanel.Controls.Add(this.ModeLabel, 0, 1);
             this.configLayoutPanel.Controls.Add(this.ServerLabel, 0, 0);
-            this.configLayoutPanel.Controls.Add(this.ProfileNameText, 1, 2);
             this.configLayoutPanel.Controls.Add(this.ModeComboBox, 1, 1);
             this.configLayoutPanel.Controls.Add(this.ServerComboBox, 1, 0);
             this.configLayoutPanel.Controls.Add(this.tableLayoutPanel2, 2, 0);
@@ -341,22 +339,11 @@
             this.configLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.configLayoutPanel.Location = new System.Drawing.Point(3, 19);
             this.configLayoutPanel.Name = "configLayoutPanel";
-            this.configLayoutPanel.RowCount = 3;
+            this.configLayoutPanel.RowCount = 2;
             this.configLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.configLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.configLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.configLayoutPanel.Size = new System.Drawing.Size(703, 93);
+            this.configLayoutPanel.Size = new System.Drawing.Size(703, 62);
             this.configLayoutPanel.TabIndex = 15;
-            // 
-            // ProfileLabel
-            // 
-            this.ProfileLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.ProfileLabel.AutoSize = true;
-            this.ProfileLabel.Location = new System.Drawing.Point(3, 68);
-            this.ProfileLabel.Name = "ProfileLabel";
-            this.ProfileLabel.Size = new System.Drawing.Size(45, 17);
-            this.ProfileLabel.TabIndex = 10;
-            this.ProfileLabel.Text = "Profile";
             // 
             // ModeLabel
             // 
@@ -377,14 +364,6 @@
             this.ServerLabel.Size = new System.Drawing.Size(45, 17);
             this.ServerLabel.TabIndex = 0;
             this.ServerLabel.Text = "Server";
-            // 
-            // ProfileNameText
-            // 
-            this.ProfileNameText.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ProfileNameText.Location = new System.Drawing.Point(54, 63);
-            this.ProfileNameText.Name = "ProfileNameText";
-            this.ProfileNameText.Size = new System.Drawing.Size(546, 23);
-            this.ProfileNameText.TabIndex = 11;
             // 
             // ModeComboBox
             // 
@@ -658,29 +637,36 @@
             // 
             // ProfileGroupBox
             // 
-            this.ProfileGroupBox.Controls.Add(this.ProfileTable);
-            this.ProfileGroupBox.Location = new System.Drawing.Point(3, 124);
+            this.ProfileGroupBox.Controls.Add(this.ProfileFlowPanel);
+            this.ProfileGroupBox.AutoSize = true;
+            this.ProfileGroupBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ProfileGroupBox.Location = new System.Drawing.Point(3, 94);
             this.ProfileGroupBox.Name = "ProfileGroupBox";
-            this.ProfileGroupBox.Size = new System.Drawing.Size(709, 65);
+            this.ProfileGroupBox.Size = new System.Drawing.Size(709, 55);
             this.ProfileGroupBox.TabIndex = 13;
             this.ProfileGroupBox.TabStop = false;
-            this.ProfileGroupBox.Text = "Profiles";
+            this.ProfileGroupBox.Text = "配置";
             // 
-            // ProfileTable
+            // ProfileFlowPanel
             // 
-            this.ProfileTable.AutoSize = true;
-            this.ProfileTable.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ProfileTable.ColumnCount = 2;
-            this.ProfileTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.ProfileTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.ProfileTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ProfileTable.Location = new System.Drawing.Point(3, 19);
-            this.ProfileTable.Name = "ProfileTable";
-            this.ProfileTable.RowCount = 1;
-            this.ProfileTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.ProfileTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.ProfileTable.Size = new System.Drawing.Size(703, 43);
-            this.ProfileTable.TabIndex = 0;
+            this.ProfileFlowPanel.AutoSize = true;
+            this.ProfileFlowPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ProfileFlowPanel.Controls.Add(this.SaveProfileButton);
+            this.ProfileFlowPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ProfileFlowPanel.Location = new System.Drawing.Point(3, 19);
+            this.ProfileFlowPanel.Name = "ProfileFlowPanel";
+            this.ProfileFlowPanel.Size = new System.Drawing.Size(703, 33);
+            this.ProfileFlowPanel.TabIndex = 0;
+            this.ProfileFlowPanel.WrapContents = false;
+            // 
+            // SaveProfileButton
+            // 
+            this.SaveProfileButton.Name = "SaveProfileButton";
+            this.SaveProfileButton.Size = new System.Drawing.Size(80, 30);
+            this.SaveProfileButton.TabIndex = 0;
+            this.SaveProfileButton.Text = "保存配置";
+            this.SaveProfileButton.UseVisualStyleBackColor = true;
+            this.SaveProfileButton.Click += new System.EventHandler(this.SaveProfileButton_Click);
             // 
             // flowLayoutPanel1
             // 
@@ -692,16 +678,16 @@
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(12, 29);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(715, 256);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(715, 243);
             this.flowLayoutPanel1.TabIndex = 14;
             // 
             // ButtomControlContainerControl
             // 
             this.ButtomControlContainerControl.Controls.Add(this.ControlButton);
             this.ButtomControlContainerControl.Controls.Add(this.SettingsButton);
-            this.ButtomControlContainerControl.Location = new System.Drawing.Point(3, 195);
+            this.ButtomControlContainerControl.Location = new System.Drawing.Point(3, 152);
             this.ButtomControlContainerControl.Name = "ButtomControlContainerControl";
-            this.ButtomControlContainerControl.Size = new System.Drawing.Size(706, 58);
+            this.ButtomControlContainerControl.Size = new System.Drawing.Size(706, 88);
             this.ButtomControlContainerControl.TabIndex = 14;
             this.ButtomControlContainerControl.TabStop = false;
             this.ButtomControlContainerControl.Text = "groupBox1";
@@ -742,6 +728,7 @@
             this.StatusStrip.ResumeLayout(false);
             this.StatusStrip.PerformLayout();
             this.NotifyMenu.ResumeLayout(false);
+            this.ProfileFlowPanel.ResumeLayout(false);
             this.ProfileGroupBox.ResumeLayout(false);
             this.ProfileGroupBox.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
@@ -782,9 +769,8 @@
         private System.Windows.Forms.ToolStripMenuItem OpenDirectoryToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OptionsToolStripMenuItem;
         private System.Windows.Forms.GroupBox ProfileGroupBox;
-        private System.Windows.Forms.Label ProfileLabel;
-        private System.Windows.Forms.TextBox ProfileNameText;
-        private System.Windows.Forms.TableLayoutPanel ProfileTable;
+        private System.Windows.Forms.FlowLayoutPanel ProfileFlowPanel;
+        private System.Windows.Forms.Button SaveProfileButton;
         private System.Windows.Forms.ToolStripMenuItem CheckForUpdateToolStripMenuItem;
         private System.Windows.Forms.ComboBox ServerComboBox;
         private System.Windows.Forms.Label ServerLabel;

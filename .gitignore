@@ -3,3 +3,6 @@
 /release
 /packages
 /TestResults
+publish_output/
+Netch/bin/
+Netch/obj/

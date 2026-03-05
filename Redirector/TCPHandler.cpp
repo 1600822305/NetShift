@@ -1,5 +1,7 @@
 #include "TCPHandler.h"
 
+extern int tgtType;
+
 SOCKET tcpSocket = INVALID_SOCKET;
 USHORT tcpListen = 0;
 
@@ -159,29 +161,51 @@ void TCPHandler::Handle(SOCKET client)
 	auto target = tcpContext[id];
 	tcpLock.unlock();
 
-	auto remote = new SocksHelper::TCP();
-	if (!remote->Connect(&target))
-	{
-		closesocket(client);
+	SOCKET remoteSocket = INVALID_SOCKET;
 
+	if (tgtType == 1)
+	{
+		/* HTTP CONNECT proxy */
+		auto remote = new HttpHelper::TCP();
+		if (!remote->Connect(&target))
+		{
+			closesocket(client);
+			delete remote;
+			return;
+		}
+		remoteSocket = remote->tcpSocket;
+		remote->tcpSocket = INVALID_SOCKET; /* prevent destructor from closing */
 		delete remote;
-		return;
+	}
+	else
+	{
+		/* SOCKS5 proxy */
+		auto remote = new SocksHelper::TCP();
+		if (!remote->Connect(&target))
+		{
+			closesocket(client);
+			delete remote;
+			return;
+		}
+		remoteSocket = remote->tcpSocket;
+		remote->tcpSocket = INVALID_SOCKET; /* prevent destructor from closing */
+		delete remote;
 	}
 
-	thread(TCPHandler::Send, client, remote).detach();
-	TCPHandler::Read(client, remote);
+	thread(TCPHandler::Send, client, remoteSocket).detach();
+	TCPHandler::Read(client, remoteSocket);
 
 	closesocket(client);
-	delete remote;
+	closesocket(remoteSocket);
 }
 
-void TCPHandler::Read(SOCKET client, SocksHelper::PTCP remote)
+void TCPHandler::Read(SOCKET client, SOCKET remote)
 {
 	char buffer[1446];
 	
 	while (tcpSocket != INVALID_SOCKET)
 	{
-		int length = remote->Read(buffer, sizeof(buffer));
+		int length = recv(remote, buffer, sizeof(buffer), 0);
 		if (length == 0 || length == SOCKET_ERROR)
 			return;
 
@@ -190,7 +214,7 @@ void TCPHandler::Read(SOCKET client, SocksHelper::PTCP remote)
 	}
 }
 
-void TCPHandler::Send(SOCKET client, SocksHelper::PTCP remote)
+void TCPHandler::Send(SOCKET client, SOCKET remote)
 {
 	char buffer[1446];
 
@@ -200,7 +224,7 @@ void TCPHandler::Send(SOCKET client, SocksHelper::PTCP remote)
 		if (length == 0 || length == SOCKET_ERROR)
 			return;
 
-		if (remote->Send(buffer, length) != length)
+		if (send(remote, buffer, length, 0) != length)
 			return;
 	}
 }

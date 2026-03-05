@@ -14,7 +14,7 @@
     <ApplicationIcon>Resources\Netch.ico</ApplicationIcon>
     <IsPackable>false</IsPackable>
     <!-- event handler async void Warning -->
-    <NoWarn>VSTHRD100</NoWarn>
+    <NoWarn>VSTHRD100;CA1416;NETSDK1138</NoWarn>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>Default</AnalysisMode>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>

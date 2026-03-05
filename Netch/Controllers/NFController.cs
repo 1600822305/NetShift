@@ -68,6 +68,7 @@ public class NFController : IModeController
         Dial(NameList.AIO_TGTPORT, server.Port.ToString());
         Dial(NameList.AIO_TGTUSER, server.Username ?? string.Empty);
         Dial(NameList.AIO_TGTPASS, server.Password ?? string.Empty);
+        Dial(NameList.AIO_TGTTYPE, server is HttpServer ? "1" : "0");
 
         // Mode Rule
         DialRule();

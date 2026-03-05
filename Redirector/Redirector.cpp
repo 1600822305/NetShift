@@ -22,6 +22,7 @@ extern wstring tgtHost;
 extern wstring tgtPort;
 extern string tgtUsername;
 extern string tgtPassword;
+extern int tgtType;
 
 extern vector<wstring> bypassList;
 extern vector<wstring> handleList;
@@ -138,6 +139,9 @@ extern "C" {
 			break;
 		case AIO_TGTPASS:
 			tgtPassword = ws2s(value);
+			break;
+		case AIO_TGTTYPE:
+			tgtType = atoi(ws2s(value).c_str());
 			break;
 		case AIO_CLRNAME:
 			bypassList.clear();

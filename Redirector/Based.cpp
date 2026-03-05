@@ -19,6 +19,7 @@ wstring tgtHost = L"127.0.0.1";
 wstring tgtPort = L"1080";
 string tgtUsername = "";
 string tgtPassword = "";
+int tgtType = 0; // 0=socks5, 1=http
 
 vector<wstring> bypassList;
 vector<wstring> handleList;
