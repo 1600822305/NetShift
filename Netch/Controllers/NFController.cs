@@ -77,9 +77,13 @@ public class NFController : IModeController
             throw new MessageException("Redirector start failed.");
     }
 
-    public Task StopAsync()
+    public async Task StopAsync()
     {
-        return FreeAsync();
+        var freeTask = FreeAsync();
+        if (await Task.WhenAny(freeTask, Task.Delay(3000)) != freeTask)
+        {
+            Log.Warning("Redirector FreeAsync timed out after 3s, continuing without waiting");
+        }
     }
 
     #region CheckRule

@@ -135,7 +135,16 @@ public abstract class Guard
             if (Instance is { HasExited: false })
             {
                 Instance.Kill();
-                await Instance.WaitForExitAsync();
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
+                {
+                    await Instance.WaitForExitAsync(cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    Log.Warning("Process {Name} did not exit in 5s, force killing", Instance.ProcessName);
+                    try { Instance.Kill(true); } catch { }
+                }
             }
         }
         catch (Exception e)

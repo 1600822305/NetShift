@@ -120,7 +120,11 @@ public static class MainController
 
         try
         {
-            await Task.WhenAll(tasks);
+            var allTasks = Task.WhenAll(tasks);
+            if (await Task.WhenAny(allTasks, Task.Delay(10000)) != allTasks)
+            {
+                Log.Warning("MainController Stop timed out after 10s, force continuing");
+            }
         }
         catch (Exception e)
         {
