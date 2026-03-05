@@ -37,21 +37,54 @@ jobs:
       shell: pwsh
       run: Compress-Archive -Path publish/* -DestinationPath "NetShift-${{ steps.version.outputs.VERSION }}-x64.zip"
 
+    - name: Generate changelog
+      id: changelog
+      shell: bash
+      run: |
+        # Get previous tag
+        PREV_TAG=$(git tag --sort=-creatordate | head -2 | tail -1)
+        if [ "$PREV_TAG" = "${{ steps.version.outputs.VERSION }}" ] || [ -z "$PREV_TAG" ]; then
+          # First release, get all commits
+          CHANGELOG=$(git log --pretty=format:"- %s ([%h](https://github.com/1600822305/NetShift/commit/%H))" -20)
+        else
+          CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/1600822305/NetShift/commit/%H))")
+        fi
+        # Escape for multiline output
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "CHANGELOG<<$EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
         name: "NetShift ${{ steps.version.outputs.VERSION }}"
         body: |
           ## NetShift ${{ steps.version.outputs.VERSION }}
-          
-          ### 使用方法
-          1. 下载 `NetShift-${{ steps.version.outputs.VERSION }}-x64.zip`
+
+          ### 📦 下载
+
+          | 平台 | 文件 |
+          |------|------|
+          | 🪟 Windows x64 | `NetShift-${{ steps.version.outputs.VERSION }}-x64.zip` |
+
+          ### 📝 更新内容
+
+          ${{ steps.changelog.outputs.CHANGELOG }}
+
+          ### 🚀 使用方法
+
+          1. 下载上方 `NetShift-${{ steps.version.outputs.VERSION }}-x64.zip`
           2. 解压到任意目录
           3. 运行 `Netch.exe`
-          
-          ### 系统要求
+
+          ### 💻 系统要求
+
           - Windows 10/11 x64
-          - .NET 6.0 Runtime (已内置，无需额外安装)
+          - .NET 6.0 Runtime（已内置，无需额外安装）
+
+          ---
+          > 基于 [Netch](https://github.com/netchx/netch) v1.9.7 二次开发
         files: "NetShift-${{ steps.version.outputs.VERSION }}-x64.zip"
         draft: false
         prerelease: false
