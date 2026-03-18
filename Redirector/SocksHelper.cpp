@@ -213,6 +213,24 @@ bool SocksHelper::TCP::Connect(PSOCKADDR_IN6 target)
 			return false;
 		}
 	}
+	else if (IN6_IS_ADDR_V4MAPPED(&target->sin6_addr))
+	{
+		/* Extract IPv4 from ::ffff:x.x.x.x mapped address */
+		char buffer[10]{};
+		buffer[0] = 0x05;
+		buffer[1] = 0x01;
+		buffer[2] = 0x00;
+		buffer[3] = 0x01;
+
+		memcpy(buffer + 4, &target->sin6_addr.s6_addr[12], 4);
+		memcpy(buffer + 8, &target->sin6_port, 2);
+
+		if (send(this->tcpSocket, buffer, 10, 0) != 10)
+		{
+			printf("[Redirector][SocksHelper::TCP::Connect] Send connect request failed: %d\n", WSAGetLastError());
+			return false;
+		}
+	}
 	else
 	{
 		char buffer[22]{};
@@ -385,8 +403,11 @@ int SocksHelper::UDP::Send(PSOCKADDR_IN6 target, const char* buffer, int length)
 	if (target->sin6_family != AF_INET && target->sin6_family != AF_INET6)
 		return SOCKET_ERROR;
 
+	bool isIPv4 = (target->sin6_family == AF_INET) ||
+		(target->sin6_family == AF_INET6 && IN6_IS_ADDR_V4MAPPED(&target->sin6_addr));
+
 	auto data = new char[3 + 1 + 16 + 2 + (ULONG64)length]();
-	data[3] = (target->sin6_family == AF_INET) ? 0x01 : 0x04;
+	data[3] = isIPv4 ? 0x01 : 0x04;
 
 	if (target->sin6_family == AF_INET)
 	{
@@ -395,14 +416,20 @@ int SocksHelper::UDP::Send(PSOCKADDR_IN6 target, const char* buffer, int length)
 		memcpy(data + 4, &ipv4->sin_addr, 4);
 		memcpy(data + 8, &ipv4->sin_port, 2);
 	}
+	else if (isIPv4)
+	{
+		/* Extract IPv4 from ::ffff:x.x.x.x mapped address */
+		memcpy(data + 4, &target->sin6_addr.s6_addr[12], 4);
+		memcpy(data + 8, &target->sin6_port, 2);
+	}
 	else
 	{
 		memcpy(data + 4, &target->sin6_addr, 16);
 		memcpy(data + 20, &target->sin6_port, 2);
 	}
 
-	memcpy(data + 3 + 1 + (target->sin6_family == AF_INET ? 4 : 16) + 2, buffer, length);
-	auto dataLength = 3 + 1 + (target->sin6_family == AF_INET ? 4 : 16) + 2 + length;
+	memcpy(data + 3 + 1 + (isIPv4 ? 4 : 16) + 2, buffer, length);
+	auto dataLength = 3 + 1 + (isIPv4 ? 4 : 16) + 2 + length;
 
 	if (sendto(this->udpSocket, data, dataLength, 0, (PSOCKADDR)&this->address, (this->address.sin6_family == AF_INET ? sizeof(SOCKADDR_IN) : sizeof(SOCKADDR_IN6))) != dataLength)
 	{

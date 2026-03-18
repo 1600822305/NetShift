@@ -74,6 +74,14 @@ bool HttpHelper::TCP::Connect(PSOCKADDR_IN6 target)
 		inet_ntop(AF_INET, &ipv4->sin_addr, addrStr, sizeof(addrStr));
 		sprintf_s(portStr, "%d", ntohs(ipv4->sin_port));
 	}
+	else if (IN6_IS_ADDR_V4MAPPED(&target->sin6_addr))
+	{
+		/* Extract IPv4 from ::ffff:x.x.x.x mapped address */
+		IN_ADDR ipv4Addr;
+		memcpy(&ipv4Addr, &target->sin6_addr.s6_addr[12], 4);
+		inet_ntop(AF_INET, &ipv4Addr, addrStr, sizeof(addrStr));
+		sprintf_s(portStr, "%d", ntohs(target->sin6_port));
+	}
 	else
 	{
 		inet_ntop(AF_INET6, &target->sin6_addr, addrStr, sizeof(addrStr));
