@@ -1186,7 +1186,7 @@ public partial class MainForm : Form
         NatTypeStatusLabel.Enabled = false;
         UpdateNatTypeStatusLabelText(i18N.Translate("Testing NAT Type"));
 
-        _discoveryNatCts = new CancellationTokenSource();
+        _discoveryNatCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
         try
         {
@@ -1209,6 +1209,17 @@ public partial class MainForm : Form
                 UpdateNatTypeStatusLabelText(res.Result ?? "Error");
                 NatTypeStatusLightLabel.Visible = false;
             }
+        }
+        catch (OperationCanceledException)
+        {
+            UpdateNatTypeStatusLabelText("Timeout");
+            NatTypeStatusLightLabel.Visible = false;
+        }
+        catch (Exception e)
+        {
+            Log.Warning(e, "NAT Type Test failed");
+            UpdateNatTypeStatusLabelText("Error");
+            NatTypeStatusLightLabel.Visible = false;
         }
         finally
         {

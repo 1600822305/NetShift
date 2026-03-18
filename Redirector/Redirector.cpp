@@ -214,6 +214,16 @@ extern "C" {
 			memset(rule.remoteIpAddressMask, 0xff, sizeof(rule.remoteIpAddressMask));
 			rule.filteringFlag = NF_ALLOW;
 			nf_addRule(&rule, FALSE);
+
+			// ::ffff:127.0.0.0/104 (IPv4-mapped loopback, e.g. Java dual-stack sockets)
+			memset(&rule, 0, sizeof(NF_RULE));
+			rule.ip_family = AF_INET6;
+			rule.remoteIpAddress[10] = 0xff;
+			rule.remoteIpAddress[11] = 0xff;
+			rule.remoteIpAddress[12] = 127;
+			memset(rule.remoteIpAddressMask, 0xff, 13);
+			rule.filteringFlag = NF_ALLOW;
+			nf_addRule(&rule, FALSE);
 		}
 
 		if (!filterIntranet)
