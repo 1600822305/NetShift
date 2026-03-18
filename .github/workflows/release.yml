@@ -27,9 +27,32 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore Netch/Netch.csproj -r win-x64
 
+    - name: Download nfapi dependencies
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/netchx/netch/main/Redirector/include/nfapi.h" -OutFile "Redirector/include/nfapi.h"
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/netchx/netch/main/Redirector/include/nfdriver.h" -OutFile "Redirector/include/nfdriver.h"
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/netchx/netch/main/Redirector/include/nfevents.h" -OutFile "Redirector/include/nfevents.h"
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/netchx/netch/main/Redirector/lib/nfapi.lib" -OutFile "Redirector/lib/nfapi.lib"
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/netchx/netch/main/Redirector/static/nfapi.dll" -OutFile "Redirector/static/nfapi.dll"
+
+    - name: Build Redirector (C++)
+      run: |
+        msbuild Redirector/Redirector.vcxproj /p:Configuration=Release /p:Platform=x64
+
     - name: Publish
       run: |
         dotnet publish Netch/Netch.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+    - name: Copy native binaries and runtime files
+      shell: pwsh
+      run: |
+        Copy-Item "Redirector/bin/Release/Redirector.bin" "publish/" -Force
+        Copy-Item "Redirector/bin/Release/nfapi.dll" "publish/" -Force
+        New-Item -ItemType Directory -Path "publish/bin" -Force | Out-Null
+        Copy-Item "Storage/nfdriver.sys" "publish/bin/" -Force
+        Copy-Item "Storage/stun.txt" "publish/bin/" -Force
+        Copy-Item "Storage/aiodns.conf" "publish/bin/" -Force
 
     - name: Get version from tag
       id: version
